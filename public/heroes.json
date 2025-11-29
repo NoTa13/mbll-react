@@ -1,0 +1,51 @@
+[
+  {
+    "id": 1,
+    "name": "Alucard",
+    "role": "Fighter",
+    "image": "/img/Alucard_Skins.jpg",
+    "desc": "Аллукард — мощный боец с высоким уроном и самостоятельным стилем игры."
+  },
+  {
+    "id": 2,
+    "name": "Layla",
+    "role": "Marksman",
+    "image": "/img/layla.jpg",
+    "desc": "Лейла — стрелок дальнего боя, сильный в поздней игре."
+  },
+  {
+    "id": 3,
+    "name": "Kagura",
+    "role": "Mage",
+    "image": "/img/Kagura.jpg",
+    "desc": "Кагура — маг с контролем и высоким уроном."
+  },
+  {
+    "id": 4,
+    "name": "Gusion",
+    "role": "Assassin",
+    "image": "/img/gossen.jpg",
+    "desc": "Гассион — мобильный ассассин с быстрыми комбо."
+  },
+  {
+    "id": 5,
+    "name": "Eudora",
+    "role": "Mage",
+    "image": "/img/Eudora.jpg",
+    "desc": "Эудора — простой маг с мощным контролем."
+  },
+  {
+    "id": 6,
+    "name": "Lunox",
+    "role": "Mage",
+    "image": "/img/LUNOX.jpg",
+    "desc": "Люнокс — уникальный маг, использующий свет и тьму."
+  },
+  {
+    "id": 7,
+    "name": "Granger",
+    "role": "Marksman",
+    "image": "/img/Granger.jpg",
+    "desc": "Грейнджер — стрелок с мощными взрывными выстрелами."
+  }
+]
