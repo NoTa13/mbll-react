@@ -1,52 +1,124 @@
-import React from 'react'
-import { Routes, Route, Link } from 'react-router-dom'
+import React, { useState } from "react";
+import {
+  Link,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 
-// страницы
-import Home from './pages/Home'
-import Detail from './pages/Detail'
-import BasketList from './pages/BasketList'
-import BasketDetail from './pages/BasketDetail'
-import CreateOrder from './pages/CreateOrder'
-import UpdateOrder from './pages/UpdateOrder'
+import ThemeToggle from "./components/ThemeToggle";
+import About from "./pages/About";
+import BasketDetail from "./pages/BasketDetail";
+import BasketList from "./pages/BasketList";
+import Detail from "./pages/Detail";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import { getAuthUser, logout as logoutService } from "./services/auth";
 
-// компоненты
-import ThemeToggle from './components/ThemeToggle'
+function ProtectedRoute({ user }) {
+  const location = useLocation();
+  if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
+  return <Outlet />;
+}
 
-export default function App() {
+function Layout({ user, onLogout }) {
+  const nav = useNavigate();
+
+  function handleLogout() {
+    onLogout();
+    nav("/login", { replace: true });
+  }
+
   return (
     <div className="app-root">
-
-      {/* HEADER */}
       <header className="topbar">
-        <Link to="/" className="logo">MLBB Heroes</Link>
+        <Link to="/" className="logo">
+          MLBB Heroes
+        </Link>
 
         <div className="right">
-          <Link to="/" className="navlink">Герои</Link>
-          <Link to="/basket" className="navlink">Корзина</Link>
+          {user ? (
+            <>
+              <Link to="/" className="navlink">
+                Главная
+              </Link>
+              <Link to="/basket" className="navlink">
+                Заказы
+              </Link>
+              <Link to="/about" className="navlink">
+                О нас
+              </Link>
+              <span className="chip" title="Пользователь">
+                {user}
+              </span>
+            </>
+          ) : null}
+
           <ThemeToggle />
+
+          {user ? (
+            <button className="btn btn-ghost" onClick={handleLogout}>
+              Выйти
+            </button>
+          ) : null}
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
       <main className="container">
-        <Routes>
-          {/* heroes */}
+        <Outlet />
+      </main>
+
+      <footer className="footer">
+        <div className="footer-inner">
+          <div>© MLBB Heroes — Demo</div>
+          <div className="footer-contacts">
+            Контакты:{" "}
+            <a
+              href="https://wa.me/996704236475"
+              target="_blank"
+              rel="noreferrer"
+            >
+              WhatsApp +996704236475
+            </a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+export default function App() {
+  const [user, setUser] = useState(() => getAuthUser());
+
+  function handleLogout() {
+    logoutService();
+    setUser(null);
+  }
+
+  return (
+    <Routes>
+      <Route element={<Layout user={user} onLogout={handleLogout} />}>
+        <Route path="/login" element={<Login user={user} onLogin={setUser} />} />
+
+        <Route element={<ProtectedRoute user={user} />}>
           <Route path="/" element={<Home />} />
           <Route path="/hero/:id" element={<Detail />} />
 
-          {/* basket / orders */}
           <Route path="/basket" element={<BasketList />} />
           <Route path="/basket/:id" element={<BasketDetail />} />
-          <Route path="/order/create" element={<CreateOrder />} />
-          <Route path="/order/update/:id" element={<UpdateOrder />} />
-        </Routes>
-      </main>
 
-      {/* FOOTER */}
-      <footer className="footer">
-        © Mobile Legends fan site — Demo
-      </footer>
+          <Route path="/about" element={<About />} />
+        </Route>
 
-    </div>
-  )
+        <Route
+          path="*"
+          element={<Navigate to={user ? "/" : "/login"} replace />}
+        />
+      </Route>
+    </Routes>
+  );
 }
+

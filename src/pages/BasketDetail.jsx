@@ -1,23 +1,84 @@
-import { useParams, Link } from "react-router-dom";
-import { getOrderById } from "../services/basketApi";
+import React from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { acceptOrder, deleteOrder, getOrderById } from "../services/basketApi";
 
 export default function BasketDetail() {
   const { id } = useParams();
-  const order = getOrderById(Number(id));
+  const nav = useNavigate();
+  const orderId = Number(id);
+  const order = getOrderById(orderId);
 
-  if (!order) return <p>Заказ не найден</p>;
+  function handleAccept() {
+    acceptOrder(orderId);
+    nav("/basket");
+  }
+
+  function handleCancel() {
+    const ok = window.confirm("Отменить заказ?");
+    if (!ok) return;
+    deleteOrder(orderId);
+    nav("/basket");
+  }
+
+  if (!order) {
+    return (
+      <div className="page">
+        <h2>Заказ не найден</h2>
+        <p className="muted">Возможно, он был отменён.</p>
+        <Link className="btn btn-secondary" to="/basket">
+          К списку заказов
+        </Link>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <h2>{order.title}</h2>
+    <div className="page">
+      <div className="page-head">
+        <div>
+          <h2>{order.heroName || "Заказ"}</h2>
+          <p className="muted">ID: {order.id}</p>
+        </div>
 
-      <ul>
-        {order.items.map((i, idx) => (
-          <li key={idx}>{i}</li>
-        ))}
-      </ul>
+        <div className="actions">
+          {order.status === "pending" ? (
+            <button className="btn btn-primary" onClick={handleAccept}>
+              Принять заказ
+            </button>
+          ) : (
+            <span className="badge badge-accepted">Принят</span>
+          )}
+          <button className="btn btn-danger" onClick={handleCancel}>
+            Отменить
+          </button>
+          <Link className="btn btn-secondary" to="/basket">
+            Назад
+          </Link>
+        </div>
+      </div>
 
-      <Link to="/basket">⬅ Назад</Link>
+      <div className="card card-pad">
+        <div className="order-head">
+          {order.heroImage ? (
+            <img className="order-thumb" src={order.heroImage} alt="" />
+          ) : (
+            <div className="order-thumb order-thumb-fallback" />
+          )}
+
+          <div className="order-meta">
+            <div className="muted">
+              {order.heroRole ? `Роль: ${order.heroRole} • ` : ""}
+              Кол-во: {order.qty}
+            </div>
+            {order.heroId ? (
+              <Link className="btn btn-secondary" to={`/hero/${order.heroId}`}>
+                Открыть героя
+              </Link>
+            ) : null}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
+

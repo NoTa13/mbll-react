@@ -1,31 +1,102 @@
-import { useNavigate, useParams } from "react-router-dom";
+import React, { useMemo, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { getOrderById, updateOrder } from "../services/basketApi";
-import { useState } from "react";
 
 export default function UpdateOrder() {
   const { id } = useParams();
   const nav = useNavigate();
-  const order = getOrderById(Number(id));
+  const orderId = Number(id);
+  const order = getOrderById(orderId);
 
-  const [title, setTitle] = useState(order?.title || "");
-  const [items, setItems] = useState(order?.items.join(",") || "");
+  const [title, setTitle] = useState(order?.title ?? "");
+  const [itemsText, setItemsText] = useState(order?.items?.join("\n") ?? "");
+  const [error, setError] = useState("");
 
-  function submit() {
-    updateOrder(Number(id), {
-      title,
-      items: items.split(","),
-    });
-    nav("/basket");
+  const itemsPreview = useMemo(() => {
+    return itemsText
+      .split(/[,\n]/g)
+      .map(v => v.trim())
+      .filter(Boolean);
+  }, [itemsText]);
+
+  function submit(event) {
+    event.preventDefault();
+    setError("");
+
+    if (!order) {
+      setError("Заказ не найден.");
+      return;
+    }
+
+    if (!title.trim()) {
+      setError("Введите название заказа.");
+      return;
+    }
+
+    const updated = updateOrder(orderId, { title, items: itemsText });
+    if (!updated) {
+      setError("Заказ не найден.");
+      return;
+    }
+
+    nav(`/basket/${orderId}`);
+  }
+
+  if (!order) {
+    return (
+      <div className="page">
+        <h2>Заказ не найден</h2>
+        <p className="muted">Возможно, он был удалён.</p>
+        <Link className="btn btn-secondary" to="/basket">
+          К списку заказов
+        </Link>
+      </div>
+    );
   }
 
   return (
-    <div>
-      <h2>Редактировать заказ</h2>
+    <div className="page">
+      <div className="page-head">
+        <div>
+          <h2>Редактировать заказ</h2>
+          <p className="muted">ID: {orderId}</p>
+        </div>
+        <Link className="btn btn-secondary" to={`/basket/${orderId}`}>
+          Отмена
+        </Link>
+      </div>
 
-      <input value={title} onChange={e => setTitle(e.target.value)} />
-      <input value={items} onChange={e => setItems(e.target.value)} />
+      <div className="card card-pad">
+        {error && (
+          <div className="alert" role="alert">
+            {error}
+          </div>
+        )}
 
-      <button onClick={submit}>Обновить</button>
+        <form className="form" onSubmit={submit}>
+          <label className="field">
+            <span className="label">Название</span>
+            <input value={title} onChange={e => setTitle(e.target.value)} />
+          </label>
+
+          <label className="field">
+            <span className="label">Позиции</span>
+            <textarea
+              rows={6}
+              value={itemsText}
+              onChange={e => setItemsText(e.target.value)}
+            />
+          </label>
+
+          <div className="form-footer">
+            <div className="muted">Позиции: {itemsPreview.length}</div>
+            <button className="btn btn-primary" type="submit">
+              Сохранить
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
+
